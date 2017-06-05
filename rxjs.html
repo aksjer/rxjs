@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/5.3.0/Rx.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <style>
+    body {
+      background-color: #202020;
+      color: white;
+    }
+
+    .item {
+      text-align: center;
+      padding: 25px;
+      border: solid white;
+      margin: 15px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+
+
+  <div class="item item1" value="10">#1</div>
+  <div class="item item2" value="20">#2</div>
+  <div class="item item3" value="30">#3</div>
+
+
+
+  <script>
+    const observer = {
+      next: val => console.log(val),
+      error: err => console.log(err),
+      complete: () => console.log('complete')
+    };
+
+    Rx.Observable.fromEvent($('.item'), 'click')
+      .groupBy(e => e.target.textContent, e => e.target.textContent[1])
+      .mergeMap(observer => observer.bufferCount(5))
+      .mergeMap(observer => observer.bufferTime(1000))
+      .filter(array => array.length >= 5)
+      .throttleTime(1000)
+      .map(array => array[0])
+      // .throttleTime(1000)
+      // .debounceTile(1000)
+      // .map(event => event.target.textContent)
+      // .subscribe(observer);
+      .subscribe(id => {
+        $(`.item${id}`).css({ 'transform': 'translateX(15px)', 'border': 'solid yellow' });
+        setTimeout(() => $(`.item${id}`).css({ 'transform': 'translateX(0px)', 'border': 'solid white' }), 1000);
+      });
+
+
+    // const sub = new Rx.Subject();
+
+    // Rx.Observable.interval(1000).zip(
+    //   Rx.Observable.interval(2000),
+    //   // Rx.Observable.from([9, 7, 5, 2, 0]),
+    //   sub,
+    //   (a, b, c) => {
+    //     console.log(a, b, c);
+    //   }
+    // ).subscribe(observer);
+  </script>
+</body>
